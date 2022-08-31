@@ -9,13 +9,47 @@
 
     <h1> virtual garden blog </h1>
 
-    <h2>Intro<H2>
-    <p>The last year I have thought a lot about a very big problem in programming: keeping a codebase in a comprehendible state.
-      Having a comprihendable program is important, because the converse is a very big problem in software engineering, known as spaghetti code.
+    <h2>Intro</h2>
+    <p>The last year I have thought a lot about keeping a codebase in a comprehendible state.
+      The converse of this is a very big problem in software engineering, known as spaghetti code.
       I would also argue that a lot if not most of scalability issues come from not keeping the comprehendible state when adding code.
       This comprehendible state seems to vanish when having too much context to think about when reading code.
       To counter the unnecessary context, code can be separated into independant parts. We will define a method for separating a codebase in this article.
-      </p>
+    </p>
+    
+    <h2>The terminology we'll use</h2>
+    To facilitate the descriptions in the coming text, we'll agree on some terminology:
+    <ol>
+      <li>Import: When we have nodes A and B, with a directed edge from A to B, we say that B is an import of A.</li>
+      <li>Export: When we have nodes A and B, with a directed edge from A to B, we say that A is an export of B.</li>
+      <li>Normal Path: We have a normal path from A to C when there is a composition of directed edges that leads from A to C.
+        An example would be the graph consisiting of the nodes A, B and C, with edges from A to B and from B to C.
+      <li>Reverse Path: This is basically a Normal Path when the arrows are inverted.
+    </ol>
+      
+    <h2>The first step: Collapsables</h2>
+    <p>We will define a notion, which tells us when a node can be "collapsed".
+      Collapsing a node means, that some of its imports will disappear. We do this to abstract a subgraph to a certain node.
+      Note that some imports of a node may not disappear, or sometimes even none of its imports may disappear! 
+      When a node N may disappear after a collapse of A, we say N is "collapsable"
+      The rule defining whether or not a node is "collapsable" is the following:
+      If a node A is collapsed, an import N of A is "collapsable" if
+      <ol>
+        <li>Every Reverse Path from node N can be extended to or contains A</li>
+        <li>All imports of A are collapsable</li>
+      </ol>
+    The set of "collapsables" is defined like so: Collapse(A) = { N | N is collapsible w.r.t. A }
+    
+    <h2>Context Clusters</h2>
+    <p>Context clusters divide a graph into a hierarchy of clusters, thus achieving hierarchical modularity.
+      They are based on the notion of collapsables:
+      ContextCluster(A) = Collapse(A) \ Union(Collapse(N)), for all N in Collapse(A)
+      When writing code, we use this notion of Context Clusters to separate code units.
+      This way the amount of context one needs to know about when reading code is limited to all the nodes in its Context Cluster.
+      Because of this hierarchical modularity, the codebase can be any size, while the amount of context will not be affected by its size.</p>
+
+    
+      
       
   </body>
 </html>
