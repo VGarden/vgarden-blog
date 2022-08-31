@@ -9,7 +9,7 @@
 
     <h1> virtual garden blog </h1>
 
-    <h3>Intro</h2>
+    <h3>Intro</h3>
     <p>The last year I have thought a lot about keeping a codebase in a comprehendible state.
       The converse of this is a very big problem in software engineering, known as spaghetti code.
       I would also argue that a lot if not most of scalability issues come from not keeping the comprehendible state when adding code.
@@ -17,7 +17,7 @@
       To counter the unnecessary context, code can be separated into independant parts. We will define a method for separating a codebase in this article.
     </p>
     
-    <h3>The terminology we'll use</h2>
+    <h3>The terminology we'll use</h3>
     To facilitate the descriptions in the coming text, we'll agree on some terminology:
     <ol>
       <li>Import: When we have nodes A and B, with a directed edge from A to B, we say that B is an import of A.</li>
@@ -27,7 +27,7 @@
       <li>Reverse Path: This is basically a Normal Path when the arrows are inverted.
     </ol>
       
-    <h3>The first step: Collapsables</h2>
+    <h3>The first step: Collapsables</h3>
     <p>We will define a notion, which tells us when a node can be "collapsed".
       Collapsing a node means, that some of its imports will disappear. We do this to abstract a subgraph to a certain node.
       Note that some imports of a node may not disappear, or sometimes even none of its imports may disappear! 
@@ -40,7 +40,7 @@
       </ol>
     The set of "collapsables" is defined like so: Collapse(A) = { N | N is collapsible w.r.t. A }
     
-    <h3>Context Clusters</h2>
+    <h3>Context Clusters</h3>
     <p>Context clusters divide a graph into a hierarchy of clusters, thus achieving hierarchical modularity.
       They are based on the notion of collapsables:</p>
     <p>ContextCluster(A) = Collapse(A) \ Union(Collapse(N)), for all N in Collapse(A)</p>
