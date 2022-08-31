@@ -14,7 +14,7 @@
       The converse of this is a very big problem in software engineering, known as spaghetti code.
       I would also argue that a lot if not most of scalability issues come from not keeping the comprehendible state when adding code.
       This comprehendible state seems to vanish when having too much context to think about when reading code.
-      To counter the unnecessary context, code can be separated into independent parts. We will define a method for separating a codebase in this article.
+      To counter the unnecessary context, sometimes code can be separated into independent parts. We will define a method for separating some codebases in this article.
     </p>
     
     <h3>The terminology we'll use</h3>
@@ -37,6 +37,7 @@
       The rule defining whether or not a node is "collapsable" is the following:
       If a node A is collapsed, an import N of A is "collapsable" if
       <ol>
+        <li>There exists a Normal Path from A to N</li> 
         <li>Every Reverse Path from node N can be extended to or contains A</li>
         <li>All imports of A are collapsable</li>
       </ol>
@@ -47,12 +48,38 @@
       They are based on the notion of collapsables:</p>
     <p>ContextCluster(A) = Collapse(A) \ Union(Collapse(N)), for all N in Collapse(A)</p>
     <p>When writing code, we can translate this idea by viewing modules as nodes in a graph.
-      This way we can use this notion of Context Clusters to separate modules in a hierarchical fashion.
+      This way we can use this notion of Context Clusters to separate certain modules in a hierarchical fashion.
       The amount of context one needs to know about when reading code is limited to all the modules in its Context Cluster.
-      And because of this hierarchical modularity, the codebase can be any size, while the amount of context will not be affected by its size.</p>
+      And because of this hierarchical modularity, the codebase can be any size, while the amount of context will not be affected by that size.</p>
 
+    <h3>Case analysis</h3>
+    <p>To Make the case analysis, we'll study a screenshot from my own graph editor, which implements the notion of collapsables.
+      The red dot at the end of an edge should be seen as the arrow head.</p>
     
-      
+    <img src = "contextclustercase1.png" alt="graph">
+    
+    <p>To demonstrate the ideas previously discussed, let's collapse C.</p>
+    <p>First, we look at D and E simultaneously, because they're analogous. 
+      There is a Normal Path from C to both of them.
+      They both have the property that all of their reverse paths contain C. That's because every reverse path first hits C.
+      They have the same import, which is F.
+      Since the first two criteria are met, we now only need to verify that F (their only import) is also a collapsable.
+      There exists a Normal path from C to F (two in fact, but that's irrelevant).
+      All of it's Reverse Paths either can be extended to include C (the paths F to D and F to E can both be extended to include C),
+      or they contain C, (you can check this manually if you like).
+      F doesn't have any imports, so the condition All imports for A are collapsable is true (universal quantifiers over empty set if sceptical)
+      Conclusion: we can say F is collapsable.
+      Conclucion resting on previous conclusion: we can say D and E are collapsable.</p>
+    
+    <p> if we know collapse C, all of its collapsables disappear, as shown below</p>
+    
+    <img src = "collapsedcluster.png" alt="collapsed cluster">
+    
+    <p>Finally, you can manually verify that there are two context clusters in the (non-collapsed) graph. which are:</p>
+    <ol>
+      <li>the graph with the nodes A, B and C</li>
+      <li>the graph with the nodes D, E and F</li>
+    
       <footer>
         author: Mathis
       </footer>
