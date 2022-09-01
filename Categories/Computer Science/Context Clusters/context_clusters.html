@@ -9,7 +9,7 @@
 
     <h1> virtual garden blog </h1>
 
-    <h3>Intro</h3>
+    <h2>Intro</h2>
     <p>The last year I have thought a lot about keeping a codebase in a comprehendible state.
       The converse of this is a very big problem in software engineering, known as spaghetti code.
       I would also argue that a lot if not most of scalability issues come from not keeping the comprehendible state when adding code.
@@ -17,18 +17,20 @@
       To counter the unnecessary context, sometimes code can be separated into independent parts. We will define a method for separating some codebases in this article.
     </p>
     
-    <h3>The terminology we'll use</h3>
+    <h2>The terminology we'll use</h2>
     To facilitate the descriptions in the coming text, we'll agree on some terminology:
     <ol>
       <li>Import: When we have nodes A and B, with a directed edge from A to B, we say that B is an import of A.</li>
       <li>Export: When we have nodes A and B, with a directed edge from A to B, we say that A is an export of B.</li>
-      <li>Normal Path: We have a normal path from A to C when there is a composition of directed edges that leads from A to C.
-      <li>Reverse Path: This is basically a Normal Path when the arrows are inverted.
+      <li>Normal Path: We have a normal path from A to C when there is a composition of directed edges that leads from A to C.</li>
+      <li>Reverse Path: This is basically a Normal Path when the arrows are inverted.</li>
+      <li>Extending a path: when you can extend a path, it means there are edges that exist in the graph which you can add to the path you have.
+        Say you have a path from A to B. If now an edge exists from B to C, you can extend the path from A to B to be the path from A to C.
     </ol>
     
     <img src="terminology_examples.png" alt="terminology examples">
       
-    <h3>Collapsables</h3>
+    <h2>Collapsables</h2>
     <p>We will define a notion, which tells us when a node can be "collapsed".
       Collapsing a node means, that some of its imports (more specifically: its collapsables) will disappear. 
       We do this to abstract a subgraph to a certain node.</p>
@@ -43,7 +45,7 @@
       </ol>
     The set of "collapsables" is defined like so: Collapse(A) = { N | N is collapsable w.r.t. A }
     
-    <h3>Context Clusters</h3>
+    <h2>Context Clusters</h2>
     <p>Context clusters divide a graph into a hierarchy of clusters, thus achieving hierarchical modularity.
       They are based on the notion of collapsables:</p>
     <p>ContextCluster(A) = Collapse(A) \ Union(Collapse(N)), for all N in Collapse(A)</p>
@@ -52,8 +54,8 @@
       The amount of context one needs to know about when reading code is limited to all the modules in its Context Cluster.
       And because of this hierarchical modularity, the codebase can be any size, while the amount of context will not be affected by that size.</p>
 
-    <h3>Case analysis</h3>
-    <p>To Make the case analysis, we'll study a screenshot from my own graph editor, which implements the notion of collapsables.
+    <h2>Case analysis</h2>
+    <p>To make the case analysis, we'll study a screenshot from my own graph editor, which implements the notion of collapsables.
       The red dot at the end of an edge should be seen as the arrow head.</p>
     
     <img src = "contextclustercase1.png" alt="graph">
@@ -65,13 +67,13 @@
       They have the same import, which is F.
       Since the first two criteria are met, we now only need to verify that F (their only import) is also a collapsable.
       There exists a Normal path from C to F (two in fact, but that's irrelevant).
-      All of it's Reverse Paths either can be extended to include C (the paths F to D and F to E can both be extended to include C),
+      All of it's Reverse Paths either can be extended to include C (the reverse paths F to D and F to E can both be extended to include C),
       or they contain C, (you can check this manually if you like).
-      F doesn't have any imports, so the condition All imports for A are collapsable is true (universal quantifiers over empty set if sceptical)
+      F doesn't have any imports, so the condition All imports for F are collapsable is true (see universal quantifiers over empty set if sceptical)
       Conclusion: we can say F is collapsable.
       Conclucion resting on previous conclusion: we can say D and E are collapsable.</p>
     
-    <p> if we know collapse C, all of its collapsables disappear, as shown below</p>
+    <p> if we now collapse C, all of its collapsables disappear, as shown below</p>
     
     <img src = "collapsedcluster.png" alt="collapsed cluster">
     
@@ -79,9 +81,35 @@
     <ol>
       <li>the graph with the nodes A, B and C</li>
       <li>the graph with the nodes D, E and F</li>
+    </ol>
     
-      <footer>
-        author: Mathis
-      </footer>
+    <h2>Open ended questions</ol>
+    <p>There are a lot of unanswered questions regarding context clusters. Here we provide an incomplete list of examples:</p>
+    <ul>
+      <li>We applied the theory to programming languages by viewing modules as graph nodes. However, we could also view nodes as objects such as integer, function, ...
+        The problem with this is, that depending on the semantics of our language, these objects could be dynamic. Objects might be passed as arguments to a function for instance.
+        What this means, is that at run-time, the graph changes form, new nodes may be generated and/ or deleted, edges may go to new objects, ...
+        The question then becomes how we can still provide static guarantees about the codebase, and prevent the clusters from changing dynamically.</li>
+      <li>Another interesting endeavour might be to look for other definitions of context clusters and or collapsables, that are equivalent to the one postulated here.</li>
+      <li>On a more pragmatic note, we haven't presented an efficient algorithm for detecting collapsables and/or context clusters here. 
+        Finding one might be enlightening. It might even lead to new discoveries for all we know</li>
+    </ul>
+    
+    <h2>Summary</h2>
+    <p>We have presented here a notion of Context Clusters. The theoretical interest lays in Context Clusters, as they have the
+      property of hierarchical modularity. We want hierarchical modularity, because it means that the context needed to understand a cluster is unrelated to the size of the graph.
+      The notion of Collapsables has two reasons:</p>
+      <ol>
+        <li>Theoretical: It supports the definition of Context Clusters</li>
+        <li>Practical: When implementing a graphical editor for this, we often want the ability to "collapse the details".
+          We can already see this done in folder strucures, but they are limited to trees. Collapsables allow any directed acyclic graph.</li>
+    </ol>
+    <p>We have here shown the use of Context Clusters in programming languages. 
+      But it should be noted that this translation of Context Clusters to software engineering told us to view code-modules as nodes.
+      Finally, it should be noted that we only covered the basics here, and there is a lot of material to study further.</p>
+      
+    <footer>
+      author: Mathis
+    </footer>
   </body>
 </html>
