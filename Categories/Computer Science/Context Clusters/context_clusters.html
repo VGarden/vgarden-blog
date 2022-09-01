@@ -48,7 +48,9 @@
     <h2>Context Clusters</h2>
     <p>Context clusters divide a graph into a hierarchy of clusters, thus achieving hierarchical modularity.
       They are based on the notion of collapsables:</p>
-    <p>ContextCluster(A) = Collapse(A) \ Union(Collapse(N)), for all N in Collapse(A)</p>
+    <p>A Context Cluster is defined as a set of nodes that are can be collapsed for the same nodes.
+      If you have a cluster A, B and C, and they are all collapsables of E and F for instance, they form a cluster.
+    On the other hand, if C were to be collapsable for the nodes X, Y and Z for instance, then C can not be in the same context cluster as A and B.</p>
     <p>When writing code, we can translate this idea by viewing modules as nodes in a graph.
       This way we can use this notion of Context Clusters to separate certain modules in a hierarchical fashion.
       The amount of context one needs to know about when reading code is limited to all the modules in its Context Cluster.
