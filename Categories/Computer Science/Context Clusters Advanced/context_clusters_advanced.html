@@ -5,7 +5,7 @@
   </head>
   <body>
 
-    <h1>The definition of Context Clusters explained</h1>
+    <h1>Virtual garden blog</h1>
     
     <h2>Intro</h2>
     <p>If you have read the previous article, you might wonder how the definition of Context Clusters came about.
@@ -18,7 +18,7 @@
       Even though trees do limit context in a hierarchical fashion, I do not consider it expressive enough to model codebases.
       So that is the first criterium: making the cluster finding algorithm work on any DAG.
       The secondary idea is that the combination of clusters should form a tree, and not a DAG.
-      When you truly want to have clusters form a DAG, which is not per so a tree, the semantics of your codebase do not make sense anymore.
+      When you truly want to have clusters form a DAG, which is not per se a tree, the semantics of your codebase do not make sense anymore.
       To explain this, let's take a look at an example.</p>
     
     <img src="clusterpic1.png" alt="graph">
@@ -51,8 +51,8 @@
     </ol>
     
     <p>There's also a semantic problem when you use these clusters in codebases. There are pretty much two main possible code-units for F.
-    First of all F can just be a module, or a structure if you will. In that case F is useless. It will never be accessed indirectly through D, 
-    and so it just sits there gathering dust. Secondly, we can try to take into account distributed systems.
+      First of all F can just be a module, or a structure if you will. In that case F is useless. It will never be accessed indirectly through D, 
+      and so it just sits there gathering dust. Secondly, we can try to take into account distributed systems.
       Now F might be a distributed object, or more abstractly: 
       a function that executes from some device that does have "access" to F. That "remote device" could then call F, 
       which might mutate some state in the cluster. This somewhat diminishes the "swappable" feature of clusters/modules, because now F is dependent on two devices:
