@@ -8,14 +8,14 @@
     <h1>Virtual garden blog</h1>
     
     <h2>Intro</h2>
-    <p>If you have read the previous article, you might wonder how the definition of Context Clusters came about.
+    <p>If you have read <a href="./Context Clusters/context_clusters.html">the previous article</a>, you might wonder how the definition of Context Clusters came about.
       That is exactly what this article explains.</p>
 
     <h2>The Cluster Tree</h2>
     <p>Besides a management of context amounts, there are also practicalities to consider when using clusters in programming languages.
-      There was one criterium that was quite central: which is that a codebase can be any DAG (directed acyclic graph).
+      There was one criterium that was quite central: <strong>which is that a codebase can be any <abbr>DAG</abbr> (directed acyclic graph)</strong>.
       This is where folder systems fall short; they are only capable of representing trees. 
-      Even though trees do limit context in a hierarchical fashion, I do not consider it expressive enough to model codebases.
+      Even though trees do limit context in a hierarchical fashion, we do not consider it expressive enough to model codebases.
       So that is the first criterium: making the cluster finding algorithm work on any DAG.
       The secondary idea is that the combination of clusters should form a tree, and not a DAG.
       When you truly want to have clusters form a DAG, which is not per se a tree, the semantics of your codebase do not make sense anymore.
