@@ -1,0 +1,10 @@
+[FOLDER_STRUCTURE]
+SOURCE=src_doc
+MATH=Categories/Math
+CS=Categories/Computer Science
+
+[FILE_DEFAULTS]
+DEFAULT_EXTENSION=.html
+
+[OUTPUTS]
+NAVIGATION_JSON=navigation.json
