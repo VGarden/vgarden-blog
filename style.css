@@ -1,24 +1,27 @@
 body {
-    line-height: 1.75;
-    background-color: #EEEEEE;
+    line-height: 1.8;
+    background-color: #EFEFEF;
 
     margin: auto;
-    width: 60%;
+    width: 50%;
     padding: 10px;
+    text-align: justify;
 }
 
 h2 {
     text-align: center;
+    text-decoration: underline;
+    text-underline-offset: 0.5vh;
 }
 
 img {
-    width: 80%;
+    width: 70%;
     display: block;
     margin: auto;
 }
 
 figcaption {
     text-align: center;
-    opacity: 60%;
-    font-size: 80%;
+    opacity: 70%;
+    font-size: 70%;
 }
