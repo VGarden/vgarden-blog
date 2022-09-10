@@ -38,7 +38,7 @@
         for(let article of (content[dataFor] || [])) {
             let liElement = document.createElement("li");
             let aElement = document.createElement("a");
-            aElement.setAttribute("href", "./"+article.hyperlink);
+            aElement.setAttribute("href", article.hyperlink);
             aElement.textContent = article.name;
             liElement.appendChild(aElement);
             ulContainer.appendChild(liElement);

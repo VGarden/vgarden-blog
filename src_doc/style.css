@@ -15,6 +15,7 @@ h2 {
 }
 
 img {
+    max-width: 50ch;
     width: 70%;
     display: block;
     margin: auto;
