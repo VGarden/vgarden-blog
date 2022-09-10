@@ -1,5 +1,5 @@
 [FOLDER_STRUCTURE]
-SOURCE=src_doc
+SOURCE=docs
 MATH=Categories/Math
 CS=Categories/Computer Science
 

@@ -20,7 +20,7 @@
                 https://developer.mozilla.org/en-US/docs/Web/API/fetch,
                 https://developer.mozilla.org/en-US/docs/Web/API/Response
             */
-            let response = await fetch("/navigation.json", { headers });
+            let response = await fetch("/vgarden-blog/navigation.json", { headers });
             log(response);
             if(! response.ok)
                 throw "Unhandled error";
