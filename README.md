@@ -12,7 +12,7 @@ In order to auto-generate it from a Python script, please proceed to the followi
 
 ```py
 cd autogen
-python autogen/main.py "the_absolute_path_to_root_project"
+python main.py "the_absolute_path_to_root_project"
 ```
 
 This script will generate for you the `navigation.json` file in the root project.
