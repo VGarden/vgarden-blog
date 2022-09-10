@@ -8,6 +8,10 @@ body {
     text-align: justify;
 }
 
+p {
+    font-size: 150%;
+}
+
 h2 {
     text-align: center;
     text-decoration: underline;
