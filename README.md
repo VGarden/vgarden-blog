@@ -1,6 +1,6 @@
 # vgarden-blog
 
-link: https://virtual-garden.github.io/vgarden-blog/
+link: https://vgarden.github.io/vgarden-blog/
 
 # For authors
 
