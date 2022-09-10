@@ -22,33 +22,92 @@
 <div class="blog">
     <h2>Intro</h2>
     <p>
-        Interpolating between a set of points is often useful, especially in data analysis and statistics.
-        Though the technique we will discover today is not used in these areas much,
-        it is a technique to interpolate between points using the lowest order polynomial, which is useful for small sets of points.
-        The beauty in Lagrange interpolation lies within its simplicity and intuitiveness, which I will try to convey in this post.
+        TODO
     </p>
     <h2>Lagrange interpolation</h2>
     <p>
         The underlying idea for this kind of interpolation is rather simple and intuitive.
         One starts by constructing a polynomial for every point in our input set of points
-        $$s = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$$
-        The way we construct the polynomial for every point $x_i$ in $s$ is by creating a polynomial
-        $l_i$ such that $l_i$ has a value of 0 for all points $x_n$ where $n\neq i$ and a value of $1$ for the point $x_i$.
-        This may sound complicated but all it means is that for each point we construct a polynomial
-        that has zeroes on all other points in our input set, and it's value is one at itself.
-        We call this the basis polynomial of the point.
+        $s = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$ which satisfies some important properties.
     </p>
-    <img src="graph_base_lines.png" about="test">
-    <figcaption>The basis polynomial for the middle point</figcaption>
     <p>
-        The way we will achieve this is by multiplying all $(x - x_n)$ for which $n\neq i$.
-        This way for any point we choose that is not our target point,
-        the entire multiplication will collapse to 0, as one of the factors becomes 0.
-        We can write this as $$z_i(x) = \prod_{m=0, m\neq i}^k {(x-x_m)}$$
-        To Scale the value of this polynomial to be $1$ at $x_i$ we need to divide $z_i$ by $z_i(x_i)$
+        What we want our polynomial $l_i$ for some $x_i$ to look like is to have a value of $0$
+        at all x values of the points in our set, besides the one we are constructing this polynomial for.
+        This x value needs to have a value of $1$ which will be clear why very soon.
+        We call the polynomial we constructed this way the basis polynomial to the point.
+    </p>
+
+    <img src="graph_base_lines.png"
+         about="test"
+         alt="A quadratic equation having zeros at the x values of 0.5 and 2 and a value of 1 at x = 1">
+    <figcaption>The basis polynomial for the middle point</figcaption>
+
+    <p>
+        The way we will achieve this is in practice is by multiplying all $(x - x_n)$ for which $n\neq i$.
+        This way for any point we plug in, that is not our target point,
+        the entire product will evaluate to $0$, as one of the factors is $0$.
+    <p/>
+    <p>
+        We can write this entire product as $$z_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k {(x-x_m)}$$
+        To scale the value of this polynomial to be $1$ at $x_i$ we need to divide $z_i(x)$ by $z_i(x_i)$
         which gives $$l_i(x) = \frac{z_i(x)}{z(x_i)}$$
-        As both of these terms have the same product we can combine them as a single fraction.
-        In the end we have $$l_i(x) = \prod_{m=0, m\neq i}^k{\left(\frac{x - x_m}{x_i - x_m}\right)}$$ for the basis polynomials
+        As both of these terms are the same product we can combine them as a single fraction in one product.
+        In the end we have our basis polynomials in dependence of any one point as
+        $$l_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k{\left(\frac{x - x_m}{x_i - x_m}\right)}$$
+    </p>
+    <h2>Putting it all together</h2>
+    <p>
+        Now that we have a way to find the basis polynomial for all points we can put it all together.
+        We need to combine these polynomials in order to, remember our original goal, get a single polynomial that
+        goes through all the points.
+    </p>
+    <p>
+        Due to the very specific way we constructed our polynomials by, we can start by adding
+        all the basis polynomials like
+        $$\sum_{n=0}^{|s|}{l_n(x)}$$
+        What we end up with you can see here
+    </p>
+    <img src="base_poly.png">
+    <figcaption>All the basis polynomials of our points shown here</figcaption>
+
+    <img src="base_poly_sum.png">
+    <figcaption>The sum of all our base polynomials</figcaption>
+
+    <p>
+        As you can see, the sum of all our polynomials is a constant function, namely $f(x) = 1$.
+        You can easily see why this is the case by looking at how we symmetrically constructed our polynomials.
+        We can slightly modify the way we add these base polynomials to find the
+        polynomial going through all the points.
+    </p>
+    <p>
+        What we will do, is scale each addend by the y-value of the point the respective polynomial was
+        constructed from. This way, as our function at this x-value is $1$, because of the way we constructed it,
+        scaling it by $y_i$ will result in it being $y_i$ in this point.
+        Furthermore, because all the other polynomials are guaranteed to have a value of $0$ in this point, summing up
+        all the scaled polynomials will result in a single polynomial, going through all the points in $s$
+    </p>
+
+    <img src="sum_mult_1.png">
+    <figcaption>The first addend scaled</figcaption>
+
+    <img src="sum_mult_2.png">
+    <figcaption>the first and second addend scaled</figcaption>
+
+    <img src="sum_mult_3.png">
+    <figcaption>All addends scaled</figcaption>
+
+    <p>
+        And there we have it! We constructed the polynomial that goes through all the points in our input set $s$!
+        To recap what we did: We started off by constructing a polynomial for each point which had zeroes for every other
+        point in our set. We scaled this to equal $1$ at itself, so when rescaling at the end while summing up
+        all the polynomials we got exactly the y-values we needed to meet all points.
+    </p>
+    <p>
+        We can write all of this down like this
+        $$l_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k{\left(\frac{x - x_m}{x_i - x_m}\right)}$$
+        $$f(x) = \sum_{n=0}^{|s|}{y_n \cdot l_n(x)}$$
+        or even more compact as
+        $$f(x) = \sum_{n=0}^{|s|}{\left(y_n \prod_{\underset{m\neq n}{m = 0}}^k{\left(\frac{x - x_m}{x_n - x_m}\right)}\right)}$$
     </p>
 </div>
 
