@@ -1,0 +1,24 @@
+body {
+    line-height: 1.75;
+    background-color: #EEEEEE;
+
+    margin: auto;
+    width: 60%;
+    padding: 10px;
+}
+
+h2 {
+    text-align: center;
+}
+
+img {
+    width: 80%;
+    display: block;
+    margin: auto;
+}
+
+figcaption {
+    text-align: center;
+    opacity: 60%;
+    font-size: 80%;
+}
