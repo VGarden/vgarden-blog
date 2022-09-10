@@ -28,19 +28,20 @@
     <p>
         The underlying idea for this kind of interpolation is rather simple and intuitive.
         One starts by constructing a polynomial for every point in our input set of points
-        $s = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$ which satisfies some important properties.
+        $s = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$. This polynomial has some important properties.
     </p>
     <p>
         What we want our polynomial $l_i$ for some $x_i$ to look like is to have a value of $0$
-        at all x values of the points in our set, besides the one we are constructing this polynomial for.
-        This x value needs to have a value of $1$ which will be clear why very soon.
-        We call the polynomial we constructed this way the basis polynomial to the point.
+        at all x values of the points in our set, other than $x_i$, the one we are constructing this
+        polynomial for.
+        $x_i$ instead needs to have a value of $1$ for reasons which will be clear soon.
+        We call the newly constructed polynomial $l_i(x)$ the basis polynomial for the point $x_i$.
     </p>
 
     <img src="graph_base_lines.png"
          about="test"
          alt="A quadratic equation having zeros at the x values of 0.5 and 2 and a value of 1 at x = 1">
-    <figcaption>The basis polynomial for the middle point</figcaption>
+    <figcaption>The basis polynomial for the second point in our input set</figcaption>
 
     <p>
         The way we will achieve this is in practice is by multiplying all $(x - x_n)$ for which $n\neq i$.
@@ -98,15 +99,14 @@
 
     <p>
         And there we have it! We constructed the polynomial that goes through all the points in our input set $s$!
-        To recap what we did: We started off by constructing a polynomial for each point which had zeroes for every other
-        point in our set. We scaled this to equal $1$ at itself, so when rescaling at the end while summing up
-        all the polynomials we got exactly the y-values we needed to meet all points.
+        To recap what we did: We started off by constructing a polynomial for each point $x_i$ in our set
+        which had zeroes for every other x-value in our set. We scaled this to equal $1$ at $x_i$, so when in the end
+        we multiply each $l_i(x)$ with $y_i$ and sum up these terms we get a function $f$ going through all points in $s$.
     </p>
     <p>
-        We can write all of this down like this
         $$l_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k{\left(\frac{x - x_m}{x_i - x_m}\right)}$$
         $$f(x) = \sum_{n=0}^{|s|}{y_n \cdot l_n(x)}$$
-        or even more compact as
+        which can be represented more compactly in a single equation as
         $$f(x) = \sum_{n=0}^{|s|}{\left(y_n \prod_{\underset{m\neq n}{m = 0}}^k{\left(\frac{x - x_m}{x_n - x_m}\right)}\right)}$$
     </p>
 </div>
