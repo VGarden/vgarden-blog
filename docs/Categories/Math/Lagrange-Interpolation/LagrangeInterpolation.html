@@ -103,12 +103,10 @@
         To recap what we did: We started off by constructing a polynomial for each point $x_i$ in our set
         which had zeroes for every other x-value in our set. We scaled this to equal $1$ at $x_i$, so when in the end
         we multiply each $l_i(x)$ with $y_i$ and sum up these terms we get a function $f$ going through all points in $s$.
-    </p>
-    <p>
-        $$l_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k{\left(\frac{x - x_m}{x_i - x_m}\right)}$$
+        $$l_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k{\frac{x - x_m}{x_i - x_m}}$$
         $$f(x) = \sum_{n=0}^{|s|}{y_n \cdot l_n(x)}$$
         which can be represented more compactly in a single equation as
-        $$f(x) = \sum_{n=0}^{|s|}{\left(y_n \prod_{\underset{m\neq n}{m = 0}}^k{\left(\frac{x - x_m}{x_n - x_m}\right)}\right)}$$
+        $$f(x) = \sum_{n=0}^{|s|}{\left(y_n \prod_{\underset{m\neq n}{m = 0}}^k{\frac{x - x_m}{x_n - x_m}}\right)}$$
     </p>
 </div>
 
