@@ -28,10 +28,11 @@
     <p>
         The underlying idea for this kind of interpolation is rather simple and intuitive.
         One starts by constructing a polynomial for every point in our input set of points
-        $s = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$. This polynomial has some important properties.
+        $$s = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$$
+        This polynomial has some important properties.
     </p>
     <p>
-        What we want our polynomial $l_i$ for some $x_i$ to look like is to have a value of $0$
+        What we want this polynomial $l_i$ for some $x_i$ to look like is to have a value of $0$
         at all x values of the points in our set, other than $x_i$, the one we are constructing this
         polynomial for.
         $x_i$ instead needs to have a value of $1$ for reasons which will be clear soon.
@@ -51,7 +52,7 @@
     <p>
         We can write this entire product as $$z_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k {(x-x_m)}$$
         To scale the value of this polynomial to be $1$ at $x_i$ we need to divide $z_i(x)$ by $z_i(x_i)$
-        which gives $$l_i(x) = \frac{z_i(x)}{z(x_i)}$$
+        which gives $$l_i(x) = \frac{z_i(x)}{z_i(x_i)}$$
         As both of these terms are the same product we can combine them as a single fraction in one product.
         In the end we have our basis polynomials in dependence of any one point as
         $$l_i(x) = \prod_{\underset{m\neq i}{m = 0}}^k{\left(\frac{x - x_m}{x_i - x_m}\right)}$$
@@ -66,10 +67,10 @@
         Due to the very specific way we constructed our polynomials by, we can start by adding
         all the basis polynomials like
         $$\sum_{n=0}^{|s|}{l_n(x)}$$
-        What we end up with you can see here
+        and end up with the following
     </p>
     <img src="base_poly.png">
-    <figcaption>All the basis polynomials of our points shown here</figcaption>
+    <figcaption>All the basis polynomials of our points are shown here</figcaption>
 
     <img src="base_poly_sum.png">
     <figcaption>The sum of all our base polynomials</figcaption>
