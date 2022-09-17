@@ -18,6 +18,9 @@ python main.py "the_absolute_path_to_root_project"
 This script will generate for you the `navigation.json` file in the root project.
 The configuration file should be found in `autogen/config` file, relatively to the root folder.
 
+The program will ask you to choose for an article name, that will be visible in the website.
+You can always update the `navigation.json` file manually.
+
 No dependencies required. Python 3.9 is fine, but other versions should be good too.
 
 **Note**: If you do not provide the path to the folder,
