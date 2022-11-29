@@ -37,6 +37,13 @@ h3 {
     font-weight: bold;
 }
 
+strong, em {
+    color: #021691;
+}
+strong {
+    font-weight: bold;
+}
+
 pre,code {
     font-family: Courier New;
     background-color: #dee9fc;
@@ -54,7 +61,7 @@ pre {
 
     <p>
         The present post is aimed at introducing the basic concepts of RxJS library,
-        and demonstrate how to integrate it in React components.
+        and exploring its integration in React components.
     </p>
     <p>
         We have chosen on purpose a NodeJS-free build, and relied on CDN instead.
@@ -67,12 +74,11 @@ pre {
 <p>
 Our goal is to design a minimalist <code>Person</code> component
 in React, that knows their age and their birthdate,
-and displays a short introduction message on the screen.
-The introduction message contains the name of the person the component stands for,
-and the age. The age is computed the usual way, by subtracting the birthdate to the current date.
-For demo purposes, every date will be integers.
+and renders a greeting message on screen.
+The message contains the name of the person the component stands for,
+and the age. For demo purposes, every date will be integers.
 </p>
-<p>Below is a sketch of what the component looks like, when rendered on two persons:</p>
+<p>Below is a sketch of what the component looks like, when rendered on two persons, John and Mary:</p>
 <div id="app" style="border:1px solid black; padding: 1em; margin-left: auto; margin-right: auto; width:95%; text-align: center"></div>
 
 <h2>RxJS keys</h2>
@@ -80,10 +86,11 @@ For demo purposes, every date will be integers.
 <h3>Observable pattern</h3>
 
 <p>
-RxJs is built around the idea of Observable.
-Observables are objects that hold a mutable state, and emits it when a change occurs.
+RxJs is built around the Observable pattern.
+Observables are objects emit changes on listeners that previously subscribed to the observable.
 Other objects can subscribe to a given observable, in order to get notified on changes
-and react accordingly.
+and react accordingly. In RxJS, the state is not always held by the observable itself. Actually,
+most observables from RxJS are stateless, lazy, and pure.
 </p>
 <p>
 RxJS allows a wide range of built-in utilities to create Observable out of the box,
@@ -92,14 +99,15 @@ without having to re-invent them. Let us start with an elementary example:
 <pre>
 let timer$ = rxjs.interval(1000);
 </pre>
-<p><small>(Do not forget to include the RxJs CDN in your page, see
+<p><small>(If you want to run this, do not forget to include the RxJs CDN in your page, see
 <a href="https://rxjs.dev/guide/installation">here</a>)</small></p>
 <p>
 If you try to run this code, you should see that nothing happened.
 Actually, what you just did is to instantiate an observable object that is supposed to emit 
-an incremented value, once every seconds. (See also
-<a href="https://rxjs.dev/api/index/function/interval">the documentation</a> for nice
-visualisations about the emission pattern.)</p>
+an incremented value, once every seconds. We greatly encourage the use of
+<a href="https://rxjs.dev/api/index/function/interval">the documentation</a> while
+learning RxJS, as you can often find in them useful deprecation notes and visualisations about the
+emission flow.</p>
 <p>
 The simplest way to use that observable, or at least the most Object-Oriented-way to do so,
 is to create a subscription on it:</p>
@@ -110,9 +118,11 @@ let subscription = timer$.subscribe(
 );
 </pre>
 <p>You should now see on the console an incremented counter that pops once every second.
+The emission never finishes, in our case.
 What happened under the hood, is that you created a resource-holding, stateful object that represents
-a <strong>subscription</strong> to the Observable. It's the subscription that actually triggers
-the observable, according to how the observable was defined. The observable itself
+a <strong>subscription</strong> to the Observable. It's the subscription that actually holds the
+counter state, and modifies its state according to the description of the observale it refers to.
+The observable itself
 remains stateless and lazy: unless you subscribe, there won't be emissions.</p>
 <p>Since subscriptions are stateful and hold a resource, you have to think about how to clean them up!
 Hopefully there is a built-in way of doing, by simply unsubscribing. In the above example,
@@ -127,10 +137,10 @@ setTimeout(() => subscription.unsubscribe(), 5000)
 
 <h3>Declarative pipelines</h3>
 
-<p>One of the strength of RxJS is that the library allows a form of <strong>Functional Programming</strong>,
+<p>One of the strengths of RxJS is that the library allows a form of <strong>Functional Programming</strong>,
 by defining actions on observables and compose them. The RxJS library actually has a rich set of
 built-ins operators, most of them designed for specific use cases.</p>
-<p>As an example, let us revisit our counter by turning every emitted value to a greeting message:</p>
+<p>As an example, let us revisit our counter by turning every emitted value to a text:</p>
 <pre>
 let timer$ = rxjs.interval(1000).pipe(
   rxjs.map(count => `Counter is ${count}`)
@@ -171,31 +181,48 @@ before the first message, which is expected.</p>
 
 <p>For now, observables are essentially read-only.
 Subscriptions hold the actual state and a composition of different observable effects can be described
-using operators.</p>
+using operators. To convince yourself about that, you can try to subscribe twice to the same observable, and see
+the differences in counters:</p>
+<pre>
+function launch(prefix) {
+  rxjs.interval(1000).pipe(
+    rxjs.filter(count => !!count),
+    rxjs.map(count => `Counter is ${count}`),
+    rxjs.map(greeting => greeting.toUpperCase())
+  ).subscribe(
+      value => console.log(prefix, value)
+  );
+}
+launch("Sub 1");
+launch("Sub 2");
+</pre>
 <p>RxJS allows users to define read-write observables, which are called <strong>Subject</strong>.
 There are different implementation of the
 <a href="https://rxjs.dev/api/index/class/Subject">Subject</a> type in RxJS, but most of the time you'll be happy with
 <a href="https://rxjs.dev/api/index/class/BehaviorSubject"><code>BehaviorSubject</code>'s</a>, as they can receive an initial value and they also directly emit
-on any new-coming subscription.
+on any new-coming subscription. Compared to other observables, subjects hold a state and re-emits it on-demand
+(for BehaviorSubject).
 </p>
 <p>The following code demonstrates the behavior of Subject and BehaviorSubject. Carefully observe what happens at
 subscription time.</p>
 <pre>
 let subject$ = new rxjs.Subject();
 let sub = subject$.subscribe(console.log);
+// (no print)
 console.log("Subscription done!");
 
 subject$.next(2022);
-
+// (you might see a print here, or maybe a bit later)
 sub.unsubscribe();
 </pre>
 <pre>
 let subject$ = new rxjs.BehaviorSubject(2021);
 let sub = subject$.subscribe(console.log);
+// (you might see a print here, or maybe a bit later)
 console.log("Subscription done!");
 
 subject$.next(2022);
-
+// (you might see a print here, or maybe a bit later)
 sub.unsubscribe();
 </pre>
 <p>Aside from their ability to receive new values with the <code>next</code> method,
@@ -349,7 +376,7 @@ function Person({ birthDate, name }) {
                 ({ loading, value }) => (
                     loading && LoadingInline()
                 ) || value
-            }</Async>
+            }&lt;/Async>
             years old.
         &lt;/p>
     );
@@ -407,36 +434,14 @@ both have their own subscriptions (to their own observable, that said), they als
 So actually, we cannot prove John and Mary are computing their age based on the same date.</p>
 <hr>
 <p>We are going to fix those two bugs by modifying the way we handle emissions, in the observable pipe lines.
-For a start, we suggest to actually push date emissions in a global subject, since the date counter is a global shared
-concern of the application. To do that, we should manually subscribe once for all.
-In order to keep things easy for a start, we do it manually in JavaScript, out of React:</p>
-<pre>
-var speedFactor$ = new rxjs.BehaviorSubject(false);
-var timer$ = speedFactor$.pipe(
-    rxjs.map(speedFactor => speedFactor ? 50 : 1000),
-    rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
-    rxjs.map(v => 1)
-)
-
-// Global subscription, as it's a global concern
-var date$ = new rxjs.Subject();
-timer$.pipe(
-    rxjs.scan((acc, v) => acc+v, 0)
-).subscribe(value => date$.next(value));
-</pre>
-<hr>
-<p>Another approach, that might maybe be more idiomatic of the system we are building,
-where state keeps living at the discretion of components, could be to define a <code>Clock</code>
-component that acts more globally and spreads the date. If we do that, we would re-render the entire
-life-cycle everytime the date changes, which is not exactly the purpose. However, the clock could also
-render a subject used for later purposes:</p>
+Regarding the system we are trying to build, the most idiomatic approach would be to rely on a <code>Clock</code>
+object that is responsible for emitting the date:</p>
 <pre>
 var speedFactor$ = new rxjs.BehaviorSubject(false);
 var date$ = new rxjs.BehaviorSubject();
 </pre>
-<p>Coupled with a clock-component that emits the date</p>
 <pre>
-function Clock(props) {
+function Clock() {
     let obsRef = React.useRef(
         speedFactor$.pipe(
             rxjs.map(speedFactor => speedFactor ? 50 : 1000),
@@ -454,17 +459,30 @@ function Clock(props) {
     )
 }
 </pre>
-<p>This latter code is the one used in this page. The global application code is now</p>
+<p>The <code>Clock</code> maintains an observable
+that escapes React life-cycle detection, so that it can be reused through life-cycles without any issue.
+When that observable modifies its state, the <code>Clock</code> pushes new dates into the <code>date$</code>
+subject, and other components are notified through it.</p>
+<hr>
+<p>
+Yet another approach (suggested by 
+<a href="https://react-rxjs.org/docs/core-concepts">React-RxJS</a>,
+which is a library that seems to have the same aspirations as mine, but with less style obviously),
+is to share the observable:</p>
 <pre>
-function App() {
-    return [
-        Clock(),
-        Person({ name: "John", birthDate: -15 }),
-        Person({ name: "Mary", birthDate: -13 }),
-        SpeedTime()
-    ]
-}
+var date$ = speedFactor$.pipe(
+    rxjs.map(speedFactor => speedFactor ? 50 : 1000),
+    rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
+    rxjs.map(v => 1),
+    rxjs.scan((acc, v) => acc+v, 0),
+    rxjs.share()
+);
 </pre>
+<p>This approach should be taken with salt, as it creates a <code>ReplaySubject</code>
+internally, hence a subscription. For our case, it's okay to use it, as the observable is
+completely global and thus there won't be a resource leak. (Never use <code>share</code> from within
+a React component you don't fully master the life-cycle on; or else couple it with <code>refCount</code>
+operator; in any cases: code with your brain!). The code of this page uses this latter solution.</p>
 
 <h2>Author's words</h2>
 
@@ -479,18 +497,27 @@ used by independent standalone objects to communicate and exchange informations.
 the component changes can now occur very locally. In fact, the properties less often travel
 top-down, which also reduces the need of state-holders components at the very top of the tree,
 with callbacks propagated downside.</p>
+<p>Compared to usual hooks, the event emission still occurs from the tissue to the objects, that is,
+from the observables to the components. This means that components are truly notified when a change occurs,
+and they don't have to query some service via a hook, as it is often achieved in Redux style.</p>
 <p>An issue though, could be the organization of the code, as the number of global observables
 might blow up. Techniques are available, though. Observables could be grouped under namespaces,
 or else we could rely on inheritance of classes to implement a trait-like code sharing.</p>
 
 <script type="text/javascript">
-var speedFactor$ = new rxjs.BehaviorSubject(false);
-var date$ = new rxjs.BehaviorSubject();
 </script>
 
 
 <script type="text/babel">
-(function() {
+var speedFactor$ = new rxjs.BehaviorSubject(false);
+var date$ = speedFactor$.pipe(
+    rxjs.map(speedFactor => speedFactor ? 50 : 1000),
+    rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
+    rxjs.map(v => 1),
+    rxjs.scan((acc, v) => acc+v, 0),
+    rxjs.share()
+);
+
 function Async(props) {
     let { observable$ } = props;
     let [value, setValue] = React.useState(undefined);
@@ -518,6 +545,7 @@ function LoadingInline() {
 }
 
 function SpeedTime() {
+    console.log("SPEED TIME IS RENDERING");
     let [ticked, setTicked] = React.useState(false);
     
     React.useEffect(() => {
@@ -538,6 +566,7 @@ function SpeedTime() {
 }
 
 function Person({ birthDate, name }) {
+    console.log("PERSON IS RENDERING");
     let age$ = date$.pipe(
         rxjs.map(date => date - birthDate)
     );
@@ -555,35 +584,18 @@ function Person({ birthDate, name }) {
     );
 }
 
-function Clock(props) {
-    let obsRef = React.useRef(
-        speedFactor$.pipe(
-            rxjs.map(speedFactor => speedFactor ? 50 : 1000),
-            rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
-            rxjs.map(v => 1),
-            rxjs.scan((acc, v) => acc+v, 0)
-        )
-    );
-    return (
-        <Async observable$={obsRef.current}>{
-            ({ loading, value }) => {
-                date$.next(value);
-            }
-        }</Async>
-    )
-}
-
-function App() {
-    return [
-        Clock(),
-        Person({ name: "John", birthDate: -15 }),
-        Person({ name: "Mary", birthDate: -13 }),
-        SpeedTime()
-    ]
-}
-
-ReactDOM.createRoot(document.querySelector('#app')).render(<App />);
-})()
+ReactDOM.createRoot(document.querySelector('#app')).render(
+    <div>
+        <div>
+            <Person name="John" birthDate="-15" />
+            <Person name="Mary" birthDate="-13" />
+        </div>
+        <div>
+            <hr />
+            <SpeedTime />
+        </div>
+    </div>
+);
 </script>
 
     </body>
