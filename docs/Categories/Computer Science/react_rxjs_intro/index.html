@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+        <script src="https://unpkg.com/rxjs@^7/dist/bundles/rxjs.umd.min.js"></script>
+        <style>
+.loading {
+    cursor: wait;
+}
+
+body {
+    font-size: 16px;
+    text-align: justify;
+    width: 80vw;
+    padding: 2em;
+}
+* {
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 1.5em;
+    box-sizing: border-box;
+    font-family: Georgia;
+}
+
+h1 {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+h3 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+pre,code {
+    font-family: Courier New;
+    background-color: #dee9fc;
+}
+pre {
+    padding: 1em;
+}
+        </style>
+    </head>
+    
+    <body>
+
+<header>
+    <h1>A too short introduction to RxJS (in React)</h1>
+
+    <p>
+        The present post is aimed at introducing the basic concepts of RxJS library,
+        and demonstrate how to integrate it in React components.
+    </p>
+    <p>
+        We have chosen on purpose a NodeJS-free build, and relied on CDN instead.
+        This page contains the live-running demo, together with the complete source code.
+    </p>
+</header>
+
+<h2>Summary</h2>
+
+<p>
+Our goal is to design a minimalist <code>Person</code> component
+in React, that knows their age and their birthdate,
+and displays a short introduction message on the screen.
+The introduction message contains the name of the person the component stands for,
+and the age. The age is computed the usual way, by subtracting the birthdate to the current date.
+For demo purposes, every date will be integers.
+</p>
+<p>Below is a sketch of what the component looks like, when rendered on two persons:</p>
+<div id="app" style="border:1px solid black; padding: 1em; margin-left: auto; margin-right: auto; width:95%; text-align: center"></div>
+
+<h2>RxJS keys</h2>
+
+<h3>Observable pattern</h3>
+
+<p>
+RxJs is built around the idea of Observable.
+Observables are objects that hold a mutable state, and emits it when a change occurs.
+Other objects can subscribe to a given observable, in order to get notified on changes
+and react accordingly.
+</p>
+<p>
+RxJS allows a wide range of built-in utilities to create Observable out of the box,
+without having to re-invent them. Let us start with an elementary example:
+</p>
+<pre>
+let timer$ = rxjs.interval(1000);
+</pre>
+<p><small>(Do not forget to include the RxJs CDN in your page, see
+<a href="https://rxjs.dev/guide/installation">here</a>)</small></p>
+<p>
+If you try to run this code, you should see that nothing happened.
+Actually, what you just did is to instantiate an observable object that is supposed to emit 
+an incremented value, once every seconds. (See also
+<a href="https://rxjs.dev/api/index/function/interval">the documentation</a> for nice
+visualisations about the emission pattern.)</p>
+<p>
+The simplest way to use that observable, or at least the most Object-Oriented-way to do so,
+is to create a subscription on it:</p>
+<pre>
+let timer$ = rxjs.interval(1000);
+let subscription = timer$.subscribe(
+    value => console.log(value)
+);
+</pre>
+<p>You should now see on the console an incremented counter that pops once every second.
+What happened under the hood, is that you created a resource-holding, stateful object that represents
+a <strong>subscription</strong> to the Observable. It's the subscription that actually triggers
+the observable, according to how the observable was defined. The observable itself
+remains stateless and lazy: unless you subscribe, there won't be emissions.</p>
+<p>Since subscriptions are stateful and hold a resource, you have to think about how to clean them up!
+Hopefully there is a built-in way of doing, by simply unsubscribing. In the above example,
+we unsubscribe after a time-out of 5 seconds:</p>
+<pre>
+let timer$ = rxjs.interval(1000);
+let subscription = timer$.subscribe(
+    value => console.log(value)
+);
+setTimeout(() => subscription.unsubscribe(), 5000)
+</pre>
+
+<h3>Declarative pipelines</h3>
+
+<p>One of the strength of RxJS is that the library allows a form of <strong>Functional Programming</strong>,
+by defining actions on observables and compose them. The RxJS library actually has a rich set of
+built-ins operators, most of them designed for specific use cases.</p>
+<p>As an example, let us revisit our counter by turning every emitted value to a greeting message:</p>
+<pre>
+let timer$ = rxjs.interval(1000).pipe(
+  rxjs.map(count => `Counter is ${count}`)
+);
+let subscription = timer$.subscribe(
+    value => console.log(value)
+);
+setTimeout(() => subscription.unsubscribe(), 5000)
+</pre>
+<p>In the above example, we piped our original observable with a
+<a href="https://rxjs.dev/api/index/function/map">map operator</a> to turn it to a greeting message.
+The remaining part of the code is unchanged.</p>
+<p>A benefit of using declarative pipelines, instead of over-charging the handler
+at the subscription level, is that you can rely on the wide range of RxJS operators available,
+and compose observables in a functional way.</p>
+<p>The follow example illustrates how to chain different operators, by chaining them in the pipe description:</p>
+<pre>
+let timer$ = rxjs.interval(1000).pipe(
+  rxjs.filter(count => !!count),
+  rxjs.map(count => `Counter is ${count}`),
+  rxjs.map(greeting => greeting.toUpperCase())
+);
+let subscription = timer$.subscribe(
+    value => console.log(value)
+);
+setTimeout(() => subscription.unsubscribe(), 5000)
+</pre>
+<p>Observe in this example that the initial
+<code>interval(1000)</code> does emit the <code>0</code> value!
+However, the pipe filters out this value using the
+<a href="https://rxjs.dev/api/index/function/filter">filter operator</a>,
+and that emission doesn't go through the remaining part of the pipeline.
+Therefore, the subscription on the resulting <code>timer$</code> doesn't see the first null-valued
+greeting message. However, if you watch close enough, you should see that there is indeed a bigger delay
+before the first message, which is expected.</p>
+
+<h3>Subjects</h3>
+
+<p>For now, observables are essentially read-only.
+Subscriptions hold the actual state and a composition of different observable effects can be described
+using operators.</p>
+<p>RxJS allows users to define read-write observables, which are called <strong>Subject</strong>.
+There are different implementation of the
+<a href="https://rxjs.dev/api/index/class/Subject">Subject</a> type in RxJS, but most of the time you'll be happy with
+<a href="https://rxjs.dev/api/index/class/BehaviorSubject"><code>BehaviorSubject</code>'s</a>, as they can receive an initial value and they also directly emit
+on any new-coming subscription.
+</p>
+<p>The following code demonstrates the behavior of Subject and BehaviorSubject. Carefully observe what happens at
+subscription time.</p>
+<pre>
+let subject$ = new rxjs.Subject();
+let sub = subject$.subscribe(console.log);
+console.log("Subscription done!");
+
+subject$.next(2022);
+
+sub.unsubscribe();
+</pre>
+<pre>
+let subject$ = new rxjs.BehaviorSubject(2021);
+let sub = subject$.subscribe(console.log);
+console.log("Subscription done!");
+
+subject$.next(2022);
+
+sub.unsubscribe();
+</pre>
+<p>Aside from their ability to receive new values with the <code>next</code> method,
+Subjects behave like any other observables: you can subscribe to them, and pipe them.</p>
+
+<h2>Integration with React</h2>
+
+<p>React is a frontend library aimed at building applications with less efforts than in plain JavaScript.
+Some key features of React are
+<a href="https://reactjs.org/docs/state-and-lifecycle.html">automatic life-cycle management</a>
+of components (via class methods or else via <a href="https://reactjs.org/docs/hooks-intro.html">hooks</a>),
+<a href="https://reactjs.org/docs/faq-internals.html">virtual DOM update</a> and
+<a href="https://reactjs.org/docs/reconciliation.html">reconcialiation</a>, and of course
+<a href="https://reactjs.org/docs/introducing-jsx.html">JSX</a>: a useful add-on on top of React Core, to describe
+HTML fragments with custom React components, in a XML-like syntax from within JavaScript itself.</p>
+
+<p>React does not come with TypeScript built-in (actually, Facebook team developped
+<a href="https://flow.org">their own type system</a> on top of JavaScript), and also doesn't provide native support for RxJS (contrary to Angular, for example).
+In this small chapter, we are going to build a component aimed at handling observable subscriptions.
+This component is fully inspired from
+<a href="https://angular.io/api/common/AsyncPipe">Angular's async pipe</a>,
+and its purpose is to remove the manual management
+of resources (subscriptions) from the global design.</p>
+
+<hr>
+
+<h3>What we want: a subscriber component</h3>
+
+<p>Before getting into the implementation, let us describe what we would like and what
+are our needs.</p>
+<p>RxJS observables are pure, stateless and lazy. In that sense, they are not a problem per se.
+Upon subscription, they provide a value and that value could be used to render a React fragment.
+We therefore expect an API of the kind:</p>
+<pre>
+&lt;Async observable$={the observable of interest}>{
+    futureValue => (
+       &lt;React.Fragment>&lt;/React.Fragment>
+    )
+}&lt;/Async>
+</pre>
+<p>This is an example of
+<a href="https://reactpatterns.js.org/docs/function-as-child-component/">function-as-child</a>,
+that is a pattern quite useful in React where the 
+fragment tree depends on a value that is not known for now, or left at the discretion of some component internals.</p>
+<p>The role of the <code>Async</code> custom component will thus be about handling the observable correctly,
+that:
+<ol>
+    <li>Opening a subscription</li>
+    <li>Give the ability to decide whether or not a value has been emitted yet</li>
+    <li>Closing the subscription</li>
+</ol>
+We could also improve it by making sure two sequential equivalent values are not emitted twice,
+to prevent too many React life-cycle triggers; however we won't go that deep in the implementation and we will
+stuck to the basis only.</p>
+
+<h3>Implementation of the subscriber component</h3>
+
+<p>Below is the full implementation of the subscriber component. We give some details below:</p>
+<pre>
+function Async(props) {
+    let { observable$ } = props;
+    let [value, setValue] = React.useState(undefined);
+    
+    let rxjsRef = React.useRef(undefined);
+    
+    React.useEffect(() => {
+        rxjsRef.current = observable$.subscribe(
+            newValue => setValue(newValue)
+        )
+        
+        return () => rxjsRef.current.unsubscribe()
+    }, [observable$]);
+  
+    return props.children({
+      loading: !value,
+      value
+    });
+}
+</pre>
+<p>The component internals are rather straightforward. In every cases, we render the <code>prop.children</code>
+(that is a function!) by transmitting two pieces of informations: is the value known?, and the value if any.
+The <code>value</code> is stored in a React state hook, and thus modifying the value will trigger a new React
+life-cycle where the component will re-render itself. We keep the RxJS subscription in a React Reference,
+which <em>does not</em> trigger life-cycle loops. As soon as the observable input of the component is modified,
+we use a React Effect to asynchronously subscribe to the observable (and we unsubscribe by returning
+a callback after the effect,
+see <a href="https://reactjs.org/docs/hooks-effect.html">the documentation</a> if details are needed).
+As you see, the component does nothing else with the observable, than subscribing to it and re-injecting
+its value within the React life-cycle engine.</p>
+
+<h2>The demo example</h2>
+
+<p>Let us now see how all those new concepts can be packed together to create our demo component.</p>
+
+<h3>A tissue of observables</h3>
+
+<p>We start by defining some global observables, that are used as a tissue accross the application,
+to emit messages and react to interactions.</p>
+
+<p>First things first, we define a subject to keep track of whether the time should be accelerated or not:</p>
+<pre>
+var speedFactor$ = new rxjs.BehaviorSubject();
+</pre>
+<p>Next, we define an observable that emits a single 1 value, at a frequency controlled by
+the state of the speed factor: on false the rate should be 1 second, on true it should be 50 milliseconds.
+We do that by piping the value of <code>speedFactor$</code>, and flatMapping onto the above-studied
+<code>interval</code> observable. (FlatMapping in RxJS can be done through different operators, which can be
+quite confusing. We use
+<a href="https://rxjs.dev/api/index/function/switchMap"><code>switchMap</code></a>,
+which is what we think to be the closest to an 
+idiomatic flatMap of monads).</p>
+<pre>
+var timer$ = speedFactor$.pipe(
+    rxjs.map(speedFactor => speedFactor ? 50 : 1000),
+    rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
+    rxjs.map(v => 1)
+)
+</pre>
+<p>As a final step, we keep track of the accumulation of all emissions, by
+reducing with a scan:</p>
+<pre>
+var date$ = timer$.pipe(
+    rxjs.scan((acc, v) => acc+v, 0)
+)
+</pre>
+<p><small>Getting used to the very long list of RxJS observables, can be quite an achievement!</small></p>
+
+<hr>
+
+<h3>Displaying a person</h3>
+
+<p>We can now define the <code>Person</code> component.
+Every person can subscribe to the <code>date$</code> observable, but
+one should keep in mind that a person also comes with an anniversary and thus,
+a person's age is shifted with respect to the current date.</p>
+<p>In order to describe that in an RxJS way, we locally pipe the <code>date$</code>
+observable and subscribe to it:</p>
+<pre>
+function Person({ birthDate, name }) {
+    let age$ = date$.pipe(
+        rxjs.map(date => date - birthDate)
+    )
+    
+    return (
+        &lt;p>
+            Hello, my name is {name}
+            and I am born in {birthDate},
+            &lt;br />
+            and thus I am
+            &lt;Async observable$={age$}>{
+                ({ loading, value }) => (
+                    loading && LoadingInline()
+                ) || value
+            }</Async>
+            years old.
+        &lt;/p>
+    );
+}
+</pre>
+<p>The loading-inline component is a simple placeholder:</p>
+<pre>
+function LoadingInline() {
+    return (
+        &lt;span className="loading">&hellip;&lt;/span>
+    )
+}
+</pre>
+
+<h3>Speeding time, and our first concurrency bug</h3>
+
+<p>We are now going to implement the speed factor of time&hellip;
+and observe our very first concurrency bugs! (it's not because you use libraries that
+you shouldn't watch out!) Let us introduce our component to speed time:</p>
+<pre>
+function SpeedTime() {
+    let [ticked, setTicked] = React.useState(false);
+    
+    React.useEffect(
+        () => speedFactor$.next(ticked),
+        [ticked]
+    );
+    
+    return (
+        &lt;p>
+            &lt;label>
+                Speed time:
+                &lt;input type="checkbox"
+                    checked={ticked}
+                    onChange={e => setTicked(e.target.checked)}
+                />
+            &lt;/label>
+        &lt;/p>
+    )
+}
+</pre>
+<p>If we run this code and play with the tick box, we should see a bug appear:
+every time the box is ticked, the age comes back its initial value.
+This is actually perfectly expected, and demonstrates we actually have two bugs in our current
+system.</p>
+<p>When we modify the state of the SpeedTime component, we are using the State hook and thus,
+we trigger React life-cycle. This forces React to replay every functional component, even though
+they don't change. What happens here is that our Person component has its own version of the <code>age$</code>
+observable, as a local variable. The observable thus changes during the life-cycle,
+and thus the <code>Async</code> component unsubscribes and re-subscribes to the next observable:
+this kills the state! (Hence why it seems to always restart.)</p>
+<p>We could work around this, by keeping the same observable in the Person component, through a React Memo
+or a Reference. However, we have also another bug, more subtle: since two of our persons (John and Mary)
+both have their own subscriptions (to their own observable, that said), they also have their own state!
+So actually, we cannot prove John and Mary are computing their age based on the same date.</p>
+<hr>
+<p>We are going to fix those two bugs by modifying the way we handle emissions, in the observable pipe lines.
+For a start, we suggest to actually push date emissions in a global subject, since the date counter is a global shared
+concern of the application. To do that, we should manually subscribe once for all.
+In order to keep things easy for a start, we do it manually in JavaScript, out of React:</p>
+<pre>
+var speedFactor$ = new rxjs.BehaviorSubject(false);
+var timer$ = speedFactor$.pipe(
+    rxjs.map(speedFactor => speedFactor ? 50 : 1000),
+    rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
+    rxjs.map(v => 1)
+)
+
+// Global subscription, as it's a global concern
+var date$ = new rxjs.Subject();
+timer$.pipe(
+    rxjs.scan((acc, v) => acc+v, 0)
+).subscribe(value => date$.next(value));
+</pre>
+<hr>
+<p>Another approach, that might maybe be more idiomatic of the system we are building,
+where state keeps living at the discretion of components, could be to define a <code>Clock</code>
+component that acts more globally and spreads the date. If we do that, we would re-render the entire
+life-cycle everytime the date changes, which is not exactly the purpose. However, the clock could also
+render a subject used for later purposes:</p>
+<pre>
+var speedFactor$ = new rxjs.BehaviorSubject(false);
+var date$ = new rxjs.BehaviorSubject();
+</pre>
+<p>Coupled with a clock-component that emits the date</p>
+<pre>
+function Clock(props) {
+    let obsRef = React.useRef(
+        speedFactor$.pipe(
+            rxjs.map(speedFactor => speedFactor ? 50 : 1000),
+            rxjs.switchMap(factor => rxjs.interval(factor)),
+            rxjs.map(v => 1),
+            rxjs.scan((acc, v) => acc+v, 0)
+        )
+    );
+    return (
+        &lt;Async observable$={obsRef.current}>{
+            ({ loading, value }) => {
+                date$.next(value);
+            }
+        }&lt;/Async>
+    )
+}
+</pre>
+<p>This latter code is the one used in this page. The global application code is now</p>
+<pre>
+function App() {
+    return [
+        Clock(),
+        Person({ name: "John", birthDate: -15 }),
+        Person({ name: "Mary", birthDate: -13 }),
+        SpeedTime()
+    ]
+}
+</pre>
+
+<h2>Author's words</h2>
+
+<p>This post has been greatly inspired by videos about original Object Oriented Programming,
+as a trial to make it explicit the existence of a functional tissue in the application,
+used by independent standalone objects to communicate and exchange informations.</p>
+<p>I also thank the Octopus, whose brain structure is a formidable source of admiration.</p>
+
+<hr>
+
+<p>About RxJS and React, the possibilities seem interesting. One advantage of the pattern is that 
+the component changes can now occur very locally. In fact, the properties less often travel
+top-down, which also reduces the need of state-holders components at the very top of the tree,
+with callbacks propagated downside.</p>
+<p>An issue though, could be the organization of the code, as the number of global observables
+might blow up. Techniques are available, though. Observables could be grouped under namespaces,
+or else we could rely on inheritance of classes to implement a trait-like code sharing.</p>
+
+<script type="text/javascript">
+var speedFactor$ = new rxjs.BehaviorSubject(false);
+var date$ = new rxjs.BehaviorSubject();
+</script>
+
+
+<script type="text/babel">
+(function() {
+function Async(props) {
+    let { observable$ } = props;
+    let [value, setValue] = React.useState(undefined);
+    
+    let rxjsRef = React.useRef(undefined);
+    
+    React.useEffect(() => {
+        rxjsRef.current = observable$.subscribe(
+            newValue => setValue(newValue)
+        )
+        
+        return () => rxjsRef.current.unsubscribe()
+    }, [observable$]);
+  
+    return props.children({
+      loading: !value,
+      value
+    });
+}
+
+function LoadingInline() {
+    return (
+        <span className="loading">&hellip;</span>
+    )
+}
+
+function SpeedTime() {
+    let [ticked, setTicked] = React.useState(false);
+    
+    React.useEffect(() => {
+        speedFactor$.next(ticked)
+    }, [ticked]);
+    
+    return (
+        <p>
+            <label>
+                Speed time:
+                <input type="checkbox"
+                    checked={ticked}
+                    onChange={e => setTicked(e.target.checked)}
+                />
+            </label>
+        </p>
+    )
+}
+
+function Person({ birthDate, name }) {
+    let age$ = date$.pipe(
+        rxjs.map(date => date - birthDate)
+    );
+    
+    return (
+        <p>
+            Hello, my name is {name} and I am born in {birthDate},
+            <br />
+            and thus I am&nbsp;
+            <Async observable$={age$}>{
+                ({ loading, value }) => (loading && LoadingInline()) || value
+            }</Async>&nbsp;
+            years old.
+        </p>
+    );
+}
+
+function Clock(props) {
+    let obsRef = React.useRef(
+        speedFactor$.pipe(
+            rxjs.map(speedFactor => speedFactor ? 50 : 1000),
+            rxjs.switchMap(speedFactor => rxjs.interval(speedFactor)),
+            rxjs.map(v => 1),
+            rxjs.scan((acc, v) => acc+v, 0)
+        )
+    );
+    return (
+        <Async observable$={obsRef.current}>{
+            ({ loading, value }) => {
+                date$.next(value);
+            }
+        }</Async>
+    )
+}
+
+function App() {
+    return [
+        Clock(),
+        Person({ name: "John", birthDate: -15 }),
+        Person({ name: "Mary", birthDate: -13 }),
+        SpeedTime()
+    ]
+}
+
+ReactDOM.createRoot(document.querySelector('#app')).render(<App />);
+})()
+</script>
+
+    </body>
+</html>
